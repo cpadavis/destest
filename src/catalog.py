@@ -1068,7 +1068,7 @@ class CatalogMethods(object):
   @staticmethod
   def load_cat(cat):
 
-    for ifile,file in enumerate(glob.glob('/home/troxel/destest/*fits.gz')):
+    for ifile,file in enumerate(glob.glob('/nfs/slac/g/ki/ki18/cpd/Projects/DES/destest/*fits.gz')):
       fits=fio.FITS(file)
       setattr(cat,file[21:-8],fits[-1].read())
 
@@ -1080,7 +1080,7 @@ class CatalogMethods(object):
     import matplotlib
     matplotlib.use ('agg')
     import matplotlib.pyplot as plt
-    plt.style.use('/home/troxel/SVA1/SVA1StyleSheet.mplstyle')
+    # plt.style.use('/home/troxel/SVA1/SVA1StyleSheet.mplstyle')
     from matplotlib.colors import LogNorm
     import pylab
 

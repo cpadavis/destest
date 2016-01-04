@@ -73,38 +73,38 @@ def single_tests(epochcat,epochmask,cat,mask,lenscat):
 
 if __name__ == '__main__':
 
-  ###   Shear testing Examples    ###
+  # ###   Shear testing Examples    ###
 
 
-  #Load shear catalog
+  # #Load shear catalog
 
-  #Select a subset of tiles (useful for testing). Set tiles to None for all tiles.
-  tiles=['DES0428-5205', 'DES0428-5622', 'DES0428-5914', 'DES0429-4414','DES0429-4457', 'DES0429-5248', 'DES0429-5705', 'DES0430-5331','DES0430-5414', 'DES0430-5957', 'DES0431-5457', 'DES0431-5748','DES0431-6039', 'DES0432-4540', 'DES0432-4623', 'DES0432-4706','DES0432-4748', 'DES0432-4831', 'DES0432-4914', 'DES0432-4957']
+  # #Select a subset of tiles (useful for testing). Set tiles to None for all tiles.
+  # tiles=['DES0428-5205', 'DES0428-5622', 'DES0428-5914', 'DES0429-4414','DES0429-4457', 'DES0429-5248', 'DES0429-5705', 'DES0430-5331','DES0430-5414', 'DES0430-5957', 'DES0431-5457', 'DES0431-5748','DES0431-6039', 'DES0432-4540', 'DES0432-4623', 'DES0432-4706','DES0432-4748', 'DES0432-4831', 'DES0432-4914', 'DES0432-4957']
 
-  #Select a set of columns to read in from catalog files. A dictionary in config.py translates these shortnames to the actual column names in the files.
-  cols=['stamp','nexp','chi2pix','psffwhm','coadd','info','like','flux','rgp','dec','evals','rad','dec_off','ra_off','dflux','fluxfrac','psf1','psf2','hsmpsf1','hsmpsf2','modmax','modmin','ra','resmax','tile','maskfrac','snr','resmin','e1','e2','flagi','flagr','iter','pz','r','g','i','z','bflux','dflux','flux']
+  # #Select a set of columns to read in from catalog files. A dictionary in config.py translates these shortnames to the actual column names in the files.
+  # cols=['stamp','nexp','chi2pix','psffwhm','coadd','info','like','flux','rgp','dec','evals','rad','dec_off','ra_off','dflux','fluxfrac','psf1','psf2','hsmpsf1','hsmpsf2','modmax','modmin','ra','resmax','tile','maskfrac','snr','resmin','e1','e2','flagi','flagr','iter','pz','r','g','i','z','bflux','dflux','flux']
 
-  #Read in files and build catalog class. See catalog.py for further details.
-  i3=catalog.CatalogStore('y1_i3_sv_v1',cutfunc=None,cattype='i3',cols=cols,catdir='/share/des/disc2/y1/im3shape/single_band/r/y1v1/tmp/',release='y1',tiles=tiles)
+  # #Read in files and build catalog class. See catalog.py for further details.
+  # i3=catalog.CatalogStore('y1_i3_sv_v1',cutfunc=None,cattype='i3',cols=cols,catdir='/share/des/disc2/y1/im3shape/single_band/r/y1v1/tmp/',release='y1',tiles=tiles)
 
-  #Load in systematics maps and match to galaxy positions.
-  sys_split.split_methods.load_maps(i3)
+  # #Load in systematics maps and match to galaxy positions.
+  # sys_split.split_methods.load_maps(i3)
 
 
-  # Select columns to read in from epoch catalog files. A dictionary in config.py translates these shortnames to the actual column names in the files.
-  cols=['coadd','expnum','xoff','yoff','psf1_exp','psf2_exp','ccd','row','col','e1','e2']
+  # # Select columns to read in from epoch catalog files. A dictionary in config.py translates these shortnames to the actual column names in the files.
+  # cols=['coadd','expnum','xoff','yoff','psf1_exp','psf2_exp','ccd','row','col','e1','e2']
 
-  #Read in files and build catalog class. See catalog.py for further details.
-  i3epoch=catalog.CatalogStore('y1_i3_sv_epoch_v1',cutfunc=None,cattype='i3',cols=cols,catdir='/share/des/disc2/y1/im3shape/single_band/r/y1v1/spte_sv/epoch_cats/',release='y1',tiles=tiles)
+  # #Read in files and build catalog class. See catalog.py for further details.
+  # i3epoch=catalog.CatalogStore('y1_i3_sv_epoch_v1',cutfunc=None,cattype='i3',cols=cols,catdir='/share/des/disc2/y1/im3shape/single_band/r/y1v1/spte_sv/epoch_cats/',release='y1',tiles=tiles)
 
-  #Match epoch entries to main catalog entries.
-  epochmask=np.in1d(i3epoch.coadd,i3.coadd[i3.info==0],assume_unique=False)
+  # #Match epoch entries to main catalog entries.
+  # epochmask=np.in1d(i3epoch.coadd,i3.coadd[i3.info==0],assume_unique=False)
 
-  #Read in lens catalog for tangential shear.
-  rm10=catalog.CatalogStore('y1_rm10',cutfunc=catalog.CatalogMethods.default_rm_cuts(),cattype='gal',cols=['coadd','ra','dec','zp'],catfile=config.redmagicdir+'sva1_gold_1.0.2_run_redmapper_v6.3.3_redmagic_0.5-10.fit',ranfile=config.redmagicdir+'random.npy',release='y1')
+  # #Read in lens catalog for tangential shear.
+  # rm10=catalog.CatalogStore('y1_rm10',cutfunc=catalog.CatalogMethods.default_rm_cuts(),cattype='gal',cols=['coadd','ra','dec','zp'],catfile=config.redmagicdir+'sva1_gold_1.0.2_run_redmapper_v6.3.3_redmagic_0.5-10.fit',ranfile=config.redmagicdir+'random.npy',release='y1')
 
-  #Run full set of shear tests on shear catalog. Separate tests are available for comparing two catalogs, but untested in this version - commented out above.
-  single_tests(i3epoch,epochmask,i3,i3.info==0,rm10)
+  # #Run full set of shear tests on shear catalog. Separate tests are available for comparing two catalogs, but untested in this version - commented out above.
+  # single_tests(i3epoch,epochmask,i3,i3.info==0,rm10)
 
 
   ###   Photo-z testing Examples    ###

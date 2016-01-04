@@ -69,12 +69,12 @@ class pz_methods(object):
 class pz_spec_validation(object):
 
   @staticmethod
-  def calc_bootstrap(test,dir,tomobins,notomo=False):
+  def calc_bootstrap(test,dir,tomobins,notomo=False,num_bootstrap=50):
     """
     Calculate bootstrap for correlation functions in spec validation tests.
     """
 
-    ratio=np.zeros((tomobins,50))
+    ratio=np.zeros((tomobins,num_bootstrap))
     var=np.zeros((tomobins))
 
     if notomo:
@@ -82,7 +82,7 @@ class pz_spec_validation(object):
     else:
       data0=np.loadtxt(dir+test+'/out/sim_data_spec_skynet/data.txt')[:,2:]
 
-    for i in xrange(50):
+    for i in xrange(num_bootstrap):
       if notomo:
         data=np.loadtxt(dir+test+'/out/sim_data_notomo_skynet_'+str(i)+'/data.txt')[2:]
       else:
@@ -99,7 +99,8 @@ class pz_spec_validation(object):
     for bin in range(tomobins):
       if notomo&(bin>0):
         continue
-      var[bin]=np.mean((ratio[bin,:]-np.mean(ratio[bin,:]))*(ratio[bin,:]-np.mean(ratio[bin,:])))*50./49.
+      # TODO [cpd]: Check if (N-1) / N or N / (N - 1)
+      var[bin]=np.mean((ratio[bin,:]-np.mean(ratio[bin,:]))*(ratio[bin,:]-np.mean(ratio[bin,:])))*num_bootstrap/(num_bootstrap-1.)
 
     if notomo:
       return np.sqrt(var[0])
@@ -109,7 +110,7 @@ class pz_spec_validation(object):
     return np.sqrt(var)
 
   @staticmethod
-  def calc_bootstrap_sig8(test,dir,param,notomo=False):
+  def calc_bootstrap_sig8(test,dir,param,notomo=False,num_bootstrap=50):
     """
     Calculate bootstrap for cosmological parameters in spec validation tests.
     """
@@ -117,7 +118,7 @@ class pz_spec_validation(object):
     from astropy.table import Table
 
     mean=[]
-    for i in xrange(50):
+    for i in xrange(num_bootstrap):
       if notomo:
         mean0=Table.read(dir+test+'/out/sim_data_notomo_skynet_'+str(i)+'/means.txt', format='ascii')
       else:
@@ -128,7 +129,8 @@ class pz_spec_validation(object):
           mean=np.append(mean,row['mean'])
     print mean
 
-    var=np.mean((mean-np.mean(mean))*(mean-np.mean(mean)))*49./50.
+    # TODO [cpd]: Check if (N-1) / N or N / (N - 1)
+    var=np.mean((mean-np.mean(mean))*(mean-np.mean(mean)))*(num_bootstrap - 1.) / num_bootstrap
 
     print var
 

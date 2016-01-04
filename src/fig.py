@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib
 matplotlib.use ('agg')
 import matplotlib.pyplot as plt
-plt.style.use('/home/troxel/SVA1/SVA1StyleSheet.mplstyle')
+# plt.style.use('/home/troxel/SVA1/SVA1StyleSheet.mplstyle')
 from matplotlib.colors import LogNorm
 import pylab
 import healpy as hp
@@ -399,44 +399,46 @@ class plot_methods(object):
     return
 
   @staticmethod
-  def plot_pz_sig8(test,label='',boot=False,tomobins=3):
+  def plot_pz_sig8(test,label='',boot=False,tomobins=3,num_bootstrap=50):
 
     from astropy.table import Table
 
-    tomobins=np.sum(np.arange(tomobins+1))
+    tomobins_in = tomobins
+    tomobins=np.sum(np.arange(tomobins_in+1))
 
-    theta=np.loadtxt(config.pzrootdir+test+'/out/sim_data_notomo_spec_skynet/ell.txt')
+    theta=np.loadtxt(config.pztestdir+test+'/out/sim_data_notomo_spec_skynet/ell.txt')
 
-    cov=np.loadtxt(config.pzrootdir+test+'/out/sim_data_notomo_spec_skynet/covmat.txt')
+    cov=np.loadtxt(config.pztestdir+test+'/out/sim_data_notomo_spec_skynet/covmat.txt')
     cov=np.sqrt(cov[4:])/np.sqrt(7.)
-    xi00=np.loadtxt(config.pzrootdir+test+'/out/sim_data_notomo_spec_skynet/data.txt')[2:]
+    xi00=np.loadtxt(config.pztestdir+test+'/out/sim_data_notomo_spec_skynet/data.txt')[2:]
     sig_notomo=np.mean(cov/xi00)
 
-    cov=np.loadtxt(config.pzrootdir+test+'/out/sim_data_spec_skynet/covmat.txt')
+    # hardcoded? TODO: Ask troxel about this set
+    cov=np.loadtxt(config.pztestdir+test+'/out/sim_data_spec_skynet/covmat.txt')
     tmp=cov[(cov[:,2]==cov[:,0])&(cov[:,3]==cov[:,1])]
     cov=np.zeros((tomobins,7))
     for i in range(tomobins):
       cov[i,:]=np.sqrt(tmp[i,4:])/np.sqrt(7.)
-    xi00=np.loadtxt(config.pzrootdir+test+'/out/sim_data_spec_skynet/data.txt')[:,2:]
+    xi00=np.loadtxt(config.pztestdir+test+'/out/sim_data_spec_skynet/data.txt')[:,2:]
     sig_tomo=np.mean(cov/xi00,axis=1)
     print sig_tomo
 
     ratio=np.zeros(tomobins+1)
     sig=np.zeros(tomobins+1)
-    data=np.loadtxt(config.pzrootdir+test+'/out/sim_data_notomo_skynet/data.txt')[2:]
-    data0=np.loadtxt(config.pzrootdir+test+'/out/sim_data_notomo_spec_skynet/data.txt')[2:]
+    data=np.loadtxt(config.pztestdir+test+'/out/sim_data_notomo_skynet/data.txt')[2:]
+    data0=np.loadtxt(config.pztestdir+test+'/out/sim_data_notomo_spec_skynet/data.txt')[2:]
     ratio[0]=np.mean((data[:]-data0[:])/data0[:])
     if boot:
-      sig[0]=pz.pz_spec_validation.calc_bootstrap(test,config.pzrootdir,tomobins,notomo=True)
+      sig[0]=pz.pz_spec_validation.calc_bootstrap(test,config.pztestdir,tomobins,notomo=True,num_bootstrap=num_bootstrap)
     else:
       sig[0]=0. 
 
-    data=np.loadtxt(config.pzrootdir+test+'/out/sim_data_skynet/data.txt')[:,2:]
-    data0=np.loadtxt(config.pzrootdir+test+'/out/sim_data_spec_skynet/data.txt')[:,2:]
+    data=np.loadtxt(config.pztestdir+test+'/out/sim_data_skynet/data.txt')[:,2:]
+    data0=np.loadtxt(config.pztestdir+test+'/out/sim_data_spec_skynet/data.txt')[:,2:]
     for bin in range(tomobins):
       ratio[bin+1]=np.mean((data[bin,:]-data0[bin,:])/data0[bin,:])
     if boot:
-      sig[1:]=pz.pz_spec_validation.calc_bootstrap(test,config.pzrootdir,tomobins,notomo=False)
+      sig[1:]=pz.pz_spec_validation.calc_bootstrap(test,config.pztestdir,tomobins,notomo=False,num_bootstrap=num_bootstrap)
     else:
       sig[1:]=0.
 
@@ -448,12 +450,15 @@ class plot_methods(object):
     for i in range(tomobins):
       plt.fill_between(i+1-.4+.8*np.arange(100)/100.,-sig_tomo[i]*np.ones(100),sig_tomo[i]*np.ones(100),interpolate=True,color='k',alpha=0.2)
     plt.plot(np.arange(tomobins+3)-1,np.zeros((tomobins+3)), marker='', linestyle='-',color='k',label='')
-    ax.xaxis.set_major_locator(MultipleLocator(1.))
-    ax.yaxis.set_major_locator(MultipleLocator(.1))
-    plt.xticks(np.arange(tomobins+3)-1,np.append([' ','2D','11','21','22','31','32','33','41','42','43','44','51','52','53','54','55','61','62','63','64','65','66'][:tomobins+2],[' ']))
+    ax.xaxis.set_major_locator(plt.MultipleLocator(1.))
+    ax.yaxis.set_major_locator(plt.MultipleLocator(.1))
+    ticklist = [' ','2D'] + ['{0}{1}'.format(i, j) for i in xrange(1, tomobins_in + 2)
+                             for j in xrange(1, i + 1)]
+    plt.xticks(np.arange(tomobins+3)-1,np.append(ticklist[:tomobins+2],[' ']))
+    # plt.xticks(np.arange(tomobins+3)-1,np.append([' ','2D','11','21','22','31','32','33','41','42','43','44','51','52','53','54','55','61','62','63','64','65','66'][:tomobins+2],[' ']))
     plt.ylim((-.3,.3))
     plt.xlim((-1,tomobins+1))
-    plt.ylabel(r'$\Delta C_{\ell}/C_{\ell}(\textrm{spec})$')
+    plt.ylabel(r'$\Delta C_{\ell}/C_{\ell}$(spec)')
     plt.xlabel(r'Bin pairs')
 
     props = dict(boxstyle='square', lw=1.2,facecolor='white', alpha=1.)
@@ -468,17 +473,17 @@ class plot_methods(object):
     param='sigma8'
 
     if boot:
-      sig8_sig=pz.pz_spec_validation.calc_bootstrap_sig8(test,config.pzrootdir,param,notomo=False)
+      sig8_sig=pz.pz_spec_validation.calc_bootstrap_sig8(test,config.pztestdir,param,notomo=False,num_bootstrap=num_bootstrap)
     else:
       sig8_sig=0.
 
     lines=[]
-    mean_notomo0 = Table.read(config.pzrootdir+test+'/out/sim_data_notomo_skynet/means.txt', format='ascii')
-    mean0 = Table.read(config.pzrootdir+test+'/out/sim_data_skynet/means.txt', format='ascii')
-    low_notomo0 = Table.read(config.pzrootdir+test+'/out/sim_data_notomo_skynet/means.txt', format='ascii')
-    low0 = Table.read(config.pzrootdir+test+'/out/sim_data_skynet/means.txt', format='ascii')
-    high_notomo0 = Table.read(config.pzrootdir+test+'/out/sim_data_notomo_skynet/means.txt', format='ascii')
-    high0 = Table.read(config.pzrootdir+test+'/out/sim_data_skynet/means.txt', format='ascii')
+    mean_notomo0 = Table.read(config.pztestdir+test+'/out/sim_data_notomo_skynet/means.txt', format='ascii')
+    mean0 = Table.read(config.pztestdir+test+'/out/sim_data_skynet/means.txt', format='ascii')
+    low_notomo0 = Table.read(config.pztestdir+test+'/out/sim_data_notomo_skynet/means.txt', format='ascii')
+    low0 = Table.read(config.pztestdir+test+'/out/sim_data_skynet/means.txt', format='ascii')
+    high_notomo0 = Table.read(config.pztestdir+test+'/out/sim_data_notomo_skynet/means.txt', format='ascii')
+    high0 = Table.read(config.pztestdir+test+'/out/sim_data_skynet/means.txt', format='ascii')
     for row in mean0:
       if param in row['parameter']:
         mean=row['mean']

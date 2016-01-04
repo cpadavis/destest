@@ -5,9 +5,9 @@ import numpy as np
 mockdir = '/share/des/sv/BCC-SVA1-WL-v3.0/'
 golddir = '/share/des/disc2/y1/gold_v101/'
 pzdir = '/share/des/disc2/y1/photo_z/'
-pztestdir = '/home/troxel/cosmosis/cosmosis-des-library/photoztests/y1/'
-cosmosiscosmodir = '/home/troxel/cosmosis/cosmosis-des-library/wl/y1prep/'
-cosmosisrootdir = '/home/troxel/cosmosis/'
+pztestdir = '/nfs/slac/g/ki/ki18/cpd/Projects/DES/destest/pztestdir/'
+cosmosiscosmodir = '/nfs/slac/g/ki/ki18/cpd/Projects/cosmosis/cosmosis-des-library/wl/y1prep/'
+cosmosisrootdir =  '/nfs/slac/g/ki/ki18/cpd/Projects/cosmosis/'
 wcsfile = '/share/des/disc2/y1/wcs/y1a1_wcs.fits.gz'
 spointsfile = 'y1a1_special_field_points.fits'
 pointingfile = '/home/troxel/catcutDES/y1a1_telradec2.txt'
@@ -17,7 +17,7 @@ redmagicdir = '/share/des/disc2/y1/redmagicv6.4.4/'
 y1blacklist = '/home/troxel/testsuite/blacklist-y1.txt'
 coaddtiles = '/share/des/coadd_tiles.fits'
 
-cosmosissource = 'source my-source'
+cosmosissource = 'source /nfs/slac/g/ki/ki18/cpd/Projects/cosmosis/config/setup-cosmosis'
 # Dictionaries
 
 cfg = {

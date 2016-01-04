@@ -7,7 +7,7 @@ import fig
 import txt
 
 vary = {
-  
+
   'omega_m' : False,
   'h0' : False,
   'omega_b' : False,
@@ -40,7 +40,7 @@ vary = {
 }
 
 prior = {
-  
+
   'omega_m' : False,
   'h0' : False,
   'omega_b' : False,
@@ -74,7 +74,7 @@ prior = {
 
 
 dc1_params = {
-  
+
   'omega_m' : (0.05, 0.3156, 0.6),
   'h0' : (0.4, 0.6727, 0.9),
   'omega_b' : (0.02, 0.0491685, 0.09),
@@ -108,7 +108,7 @@ dc1_params = {
 
 
 dc1_priors = {
-  
+
   'omega_m' : (0.3156, 0.5),
   'h0' : (0.6726, 0.2),
   'omega_b' : (0.0491685, 0.05),
@@ -217,7 +217,7 @@ class run(object):
 
     make.values(params,vary,ia,pz,mbias,planck,tomobins,sparams)
     if make.priors(priors,prior,ia,pz,mbias,planck,tomobins,spriors)==0:
-      spriors=''    
+      spriors=''
 
     p = sp.Popen('qsub', shell=True, bufsize=1, stdin=sp.PIPE, stdout=sp.PIPE, close_fds=True, cwd=config.cosomsiscosmodir)
     output,input = p.stdout, p.stdin
@@ -228,7 +228,7 @@ class run(object):
     #PBS -N %s
     #PBS -o %s.log
     #PBS -j oe
-    #PBS -m abe 
+    #PBS -m abe
     #PBS -M michael.troxel@manchester.ac.uk
     module use /home/zuntz/modules/module-files
     module load python
@@ -253,7 +253,7 @@ class run(object):
     export MNOUT="%s"
     export MNRESUME="%s"
     mpirun -n %s cosmosis --mpi data_in.ini
-    postprocess -o plots -p %s %s""" % (str(nodes),str(procs),str(hr),name,sout,config.cosomsiscosmodir,str(pts),str(mneff),str(mntol),outfile,data,cov,nofz,sia,mods,like,spriors,sparams,cldir,mnoutfile,str(resume),str(procs),sout,outfile)    
+    postprocess -o plots -p %s %s""" % (str(nodes),str(procs),str(hr),name,sout,config.cosomsiscosmodir,str(pts),str(mneff),str(mntol),outfile,data,cov,nofz,sia,mods,like,spriors,sparams,cldir,mnoutfile,str(resume),str(procs),sout,outfile)
 
     output,outputerr=p.communicate(input=job_string)
 
@@ -276,10 +276,9 @@ class run(object):
 
     """
 
-    if submit:
-      from popen2 import popen2
-      import subprocess as sp
-      import time
+    from popen2 import popen2
+    import subprocess as sp
+    import time
 
     if pz0.pztype+'.txt' not in os.listdir(config.pztestdir+test+'/nofz'):
       print 'Missing '+pz0.pztype+'.txt'
@@ -294,7 +293,7 @@ class run(object):
         if pz0.pztype+'_'+str(i)+'.txt' not in os.listdir(config.pztestdir+test+'/nofz'):
           print 'Missing '+pz0.pztype+'_'+str(i)+'.txt'
         if 'notomo_'+pz0.pztype+'_'+str(i)+'.txt' not in os.listdir(config.pztestdir+test+'/nofz'):
-          print 'Missing '+'notomo_'+pz0.pztype+'_'+str(i)+'.txt'  
+          print 'Missing '+'notomo_'+pz0.pztype+'_'+str(i)+'.txt'
 
     vary['sigma8_input']=True
     params['sigma8_input']=(0.85, 1., 1.15)
@@ -311,7 +310,7 @@ class run(object):
       #PBS -N %s
       #PBS -o %s.log
       #PBS -j oe
-      #PBS -m abe 
+      #PBS -m abe
       #PBS -M michael.troxel@manchester.ac.uk
       module use /home/zuntz/modules/module-files
       module load python
@@ -327,7 +326,8 @@ class run(object):
       cd %s
       %s
       cd %s
-      """ % (config.cosmosisrootdir,config.cosmosissource,config.pztestdir)
+      export DIR="%s"
+      """ % (config.cosmosisrootdir,config.cosmosissource,config.pztestdir, config.pztestdir+test)
 
 
     if boot:
@@ -359,13 +359,16 @@ class run(object):
             if 'notomo' in nofz:
               continue
             ii+=1
-            if ii in [10,20,30,40]:
-              print jobstring
-              output,outputerr=p.communicate(input=jobstring)
-              time.sleep(0.1)
-              jobstring=jobstring0
-              p = sp.Popen('qsub', shell=True, bufsize=1, stdin=sp.PIPE, stdout=sp.PIPE, close_fds=True, cwd=config.pztestdir+test)
-              output,input = p.stdout, p.stdin
+            if submit:
+              if ii in [10,20,30,40]:
+                print jobstring
+                if submit:
+                  output,outputerr=p.communicate(input=jobstring)
+                  time.sleep(0.1)
+                jobstring=jobstring0
+                if submit:
+                  p = sp.Popen('qsub', shell=True, bufsize=1, stdin=sp.PIPE, stdout=sp.PIPE, close_fds=True, cwd=config.pztestdir+test)
+                  output,input = p.stdout, p.stdin
             #jobstring2="""export SAVEXI="save_xi"
             jobstring2="""export SAVEXI="cl_like"
             export POFZ="%s"
@@ -373,8 +376,13 @@ class run(object):
             """ % ('spec_'+pz0.pztype,nofz[:-4])
             jobstring+=jobstring1+jobstring2+jobstring3
 
+            print(config.pztestdir)
+            print(test)
+            print(pz0.pztype)
+            print(nofz[:-4])
+            # print(dir)
             jobstring4="""postprocess %s/out/spec_%s_%s.txt -o %s/out/sim_data_%s
-            """ % (config.pztestdir+test,pz0.pztype,nofz[:-4],dir+test,nofz[:-4])
+            """ % (config.pztestdir+test,pz0.pztype,nofz[:-4],config.pztestdir+test,nofz[:-4])
             jobstring+=jobstring4
 
         if submit:
@@ -409,13 +417,13 @@ class run(object):
           time.sleep(0.1)
         else:
           with open('cosmosis_pz_boot-'+str(boot)+'_cosmo-'+str(cosmo)+'.submit','w') as f:
-            f.write(jobstring)        
+            f.write(jobstring)
 
     else:
 
       jobstring3="""cosmosis %sdata_in.ini
       """ % (config.pztestdir)
- 
+
       if cosmo:
 
         jobstring3="""mpirun -n 32 cosmosis --mpi %sdata_in.ini
@@ -456,7 +464,7 @@ class run(object):
               """ % (config.pztestdir+test,pz0.pztype,nofz[:-4],config.pztestdir+test,nofz[:-4])
             jobstring+=jobstring1+jobstring2+jobstring3
 
-            jobstring+=jobstring4 
+            jobstring+=jobstring4
 
 
         if submit:
@@ -464,7 +472,7 @@ class run(object):
           time.sleep(0.1)
         else:
           with open('cosmosis_pz_boot-'+str(boot)+'_cosmo-'+str(cosmo)+'.submit','w') as f:
-            f.write(jobstring)          
+            f.write(jobstring)
 
       else:
 
@@ -498,7 +506,7 @@ class run(object):
           time.sleep(0.1)
         else:
           with open('cosmosis_pz_boot-'+str(boot)+'_cosmo-'+str(cosmo)+'.submit','w') as f:
-            f.write(jobstring)          
+            f.write(jobstring)
 
     return
 
@@ -521,14 +529,14 @@ class make(object):
           f.write(x+' = '+str(params.get(x)[1])+n)
       if pz:
         f.write('\n[wl_photoz_errors]'+n)
-        for x in ['bias_1','bias_2','bias_3','bias_4','bias_5','bias_6'][:tomobins]:
+        for x in ['bias_{0}'.format(i) for i in xrange(1, 20)][:tomobins]:
           if (vary.get(x)):
             f.write(x+' = '+str(params.get(x)[0])+' '+str(params.get(x)[1])+' '+str(params.get(x)[2])+n)
           else:
             f.write(x+' = '+str(params.get(x)[1])+n)
       if mbias:
         f.write('\n[shear_calibration_parameters]'+n)
-        for x in ['m1','m2','m3','m4','m5','m6'][:tomobins]:
+        for x in ['m{0}'.format(i) for i in xrange(1, 20)][:tomobins]:
           if (vary.get(x)):
             f.write(x+' = '+str(params.get(x)[0])+' '+str(params.get(x)[1])+' '+str(params.get(x)[2])+n)
           else:
@@ -573,13 +581,13 @@ class make(object):
           f.write(x+' = gaussian '+str(params.get(x)[0])+' '+str(params.get(x)[1])+n)
       if pz:
         f.write('\n[wl_photoz_errors]'+n)
-        for x in ['bias_1','bias_2','bias_3','bias_4','bias_5','bias_6'][:tomobins]:
+        for x in ['bias_{0}'.format(i) for i in xrange(1, 20)][:tomobins]:
           if (prior.get(x)):
             cnt+=1
             f.write(x+' = gaussian '+str(params.get(x)[0])+' '+str(params.get(x)[1])+n)
       if mbias:
         f.write('\n[shear_calibration_parameters]'+n)
-        for x in ['m1','m2','m3','m4','m5','m6'][:tomobins]:
+        for x in ['m{0}'.format(i) for i in xrange(1, 20)][:tomobins]:
           if (prior.get(x)):
             cnt+=1
             f.write(x+' = gaussian '+str(params.get(x)[0])+' '+str(params.get(x)[1])+n)
